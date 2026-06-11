@@ -3,9 +3,10 @@ import mongoose from 'mongoose';
 import Category from '../models/Category.js';
 import auth from '../middleware/auth.js';
 import { fileStore } from '../utils/fileStore.js';
+import { dbConnected } from '../index.js';
 
 const router = Router();
-const useDB = () => mongoose.connection.readyState === 1;
+const useDB = () => dbConnected && mongoose.connection.readyState === 1;
 const COL = 'categories';
 
 router.get('/', async (req, res) => {

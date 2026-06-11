@@ -15,8 +15,17 @@ import { fileStore } from './utils/fileStore.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+export let dbConnected = false;
+
+app.use(cors({
+  origin: ['https://portfolio-frontend-pgup.onrender.com', 'http://localhost:3000', 'http://localhost:3001'],
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
+
+app.get('/', (req, res) => {
+  res.redirect('https://portfolio-frontend-pgup.onrender.com');
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
@@ -25,7 +34,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/contact', contactRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ status: 'ok', dbConnected });
 });
 
 app.get('/sitemap.xml', async (req, res) => {
@@ -34,7 +43,7 @@ app.get('/sitemap.xml', async (req, res) => {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     xml += `<url><loc>${baseUrl}/</loc><priority>1.0</priority></url>\n`;
     xml += `<url><loc>${baseUrl}/blog</loc><priority>0.8</priority></url>\n`;
-    if (mongoose.connection.readyState === 1) {
+    if (dbConnected && mongoose.connection.readyState === 1) {
       const blogs = await Blog.find({ status: 'published' }).select('slug updatedAt');
       blogs.forEach((blog) => {
         xml += `<url><loc>${baseUrl}/blog/${blog.slug}</loc><lastmod>${blog.updatedAt.toISOString()}</lastmod><priority>0.6</priority></url>\n`;
@@ -64,7 +73,10 @@ const start = async () => {
       connectDB(),
       new Promise((_, reject) => setTimeout(() => reject(new Error('MongoDB timeout')), 6000))
     ]);
+    dbConnected = true;
+    console.log('MongoDB connected');
   } catch (err) {
+    dbConnected = false;
     console.log('MongoDB not available — running without database');
   }
 };
@@ -72,7 +84,7 @@ start().then(async () => {
   const adminUsername = process.env.ADMIN_USERNAME || 'admin';
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
   try {
-    if (mongoose.connection.readyState === 1) {
+    if (dbConnected) {
       const existing = await User.findOne({ username: adminUsername });
       if (!existing) {
         await User.create({ username: adminUsername, password: adminPassword });
