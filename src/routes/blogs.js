@@ -4,10 +4,9 @@ import mongoose from 'mongoose';
 import Blog from '../models/Blog.js';
 import auth from '../middleware/auth.js';
 import { fileStore } from '../utils/fileStore.js';
-import { dbConnected } from '../index.js';
 
 const router = Router();
-const useDB = () => dbConnected && mongoose.connection.readyState === 1;
+const useDB = () => mongoose.connection.readyState === 1;
 const COL = 'blogs';
 
 router.get('/', async (req, res) => {

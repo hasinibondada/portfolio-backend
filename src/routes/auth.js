@@ -2,7 +2,6 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
-import { dbConnected } from '../index.js';
 
 const router = Router();
 
@@ -27,7 +26,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Username and password required' });
     }
 
-    if (dbConnected && mongoose.connection.readyState === 1) {
+    if (mongoose.connection.readyState === 1) {
       try {
         const user = await User.findOne({ username });
         if (!user) {

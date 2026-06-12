@@ -15,7 +15,7 @@ import { fileStore } from './utils/fileStore.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-export let dbConnected = false;
+let dbConnected = false;
 
 app.use(cors({
   origin: ['https://portfolio-frontend-pgup.onrender.com', 'http://localhost:3000', 'http://localhost:3001'],
