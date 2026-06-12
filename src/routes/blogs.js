@@ -25,7 +25,8 @@ router.get('/', async (req, res) => {
           { tags: { $regex: search, $options: 'i' } },
         ];
       }
-      let sortOption = { createdAt: -1 };
+      let sortOption = { createdAt: 1 };
+      if (sort === 'latest') sortOption = { createdAt: -1 };
       if (sort === 'mostRead') sortOption = { readCount: -1 };
       const skip = (parseInt(page) - 1) * parseInt(limit);
       const total = await Blog.countDocuments(query);
@@ -42,7 +43,7 @@ router.get('/', async (req, res) => {
     const p = parseInt(req.query.page) || 1;
     const l = parseInt(req.query.limit) || 10;
     const total = items.length;
-    items = fileStore.sort(items, { createdAt: -1 });
+    items = fileStore.sort(items, { createdAt: 1 });
     const blogs = items.slice((p - 1) * l, p * l).map(b => {
       const { content, ...rest } = b;
       return rest;
@@ -56,10 +57,10 @@ router.get('/', async (req, res) => {
 router.get('/all', auth, async (req, res) => {
   try {
     if (useDB()) {
-      const blogs = await Blog.find().populate('category', 'name slug').sort({ createdAt: -1 });
+      const blogs = await Blog.find().populate('category', 'name slug').sort({ createdAt: 1 });
       return res.json(blogs);
     }
-    const items = fileStore.sort(fileStore.find(COL), { createdAt: -1 });
+    const items = fileStore.sort(fileStore.find(COL), { createdAt: 1 });
     res.json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
